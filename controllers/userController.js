@@ -1,12 +1,12 @@
-// const jwt = require('jsonwebtoken');
-// const bcrypt = require('bcryptjs');
 const asyncHandler = require('express-async-handler');
-// const User = require('../models/userModel')
-
+const User = require('../models/userModel');
+const {generateHash} = require("../helpers/generateHash");
+const {checkHash} = require("../helpers/checkHash");
+const {generateToken} = require("../helpers/generateToken");
 
 /**
  * @desc Register new user
- * @route POST /api/users
+ * @route POST /api/users/register
  * @access public
  *
  * @param req
@@ -20,9 +20,34 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error('Please add all fields')
     }
 
-    res.json({
-        message: "Register User"
+    const userExists = await User.findOne({email})
+
+    if (userExists) {
+        res.status(400);
+
+        throw new Error('User already exists');
+    }
+
+    let hashedPassword = await generateHash(password)
+
+    const user = await User.create({
+        name,
+        email,
+        password: hashedPassword
     })
+
+    if (user) {
+        res.status(201).json({
+            _id: user.id,
+            name: user.name,
+            email: user.email,
+            token: await generateToken(user._id)
+        })
+    } else {
+        res.status(400);
+
+        throw new Error('Invalid User Data');
+    }
 })
 
 /**
@@ -34,22 +59,40 @@ const registerUser = asyncHandler(async (req, res) => {
  * @param res
  */
 const loginUser = asyncHandler(async (req, res) => {
-    res.json({
-        message: "Login User"
-    })
+
+    const {email, password} = req.body;
+
+    const user = await User.findOne({email});
+
+
+    if (user && (await checkHash(password, user.password))) {
+        res.status(201).json({
+            _id: user.id,
+            name: user.name,
+            email: user.email,
+            token: await generateToken(user._id)
+        })
+    } else {
+        res.status(400);
+        throw new Error('Invalid Credentials');
+    }
 })
 
 /**
  * @desc Get User Data
  * @route GET /api/users/me
- * @access public
+ * @access private
  *
  * @param req
  * @param res
  */
 const getUser = asyncHandler(async (req, res) => {
-    res.json({
-        message: "Get My Data"
+    const {_id, name, email} = await User.findById(req.user.id);
+
+    res.status(200).json({
+        id: _id,
+        name,
+        email,
     })
 })
 
@@ -58,3 +101,4 @@ module.exports = {
     loginUser,
     getUser
 }
+
