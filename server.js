@@ -1,6 +1,6 @@
 const express = require('express');
-// const dotenv = require('dotenv').config();
-const {errorHandler} = require('./middleware/errorMiddleware')
+const dotenv = require('dotenv').config();
+const {errorHandler} = require('./middleware/error.middleware')
 const connectDB = require('./config/db')
 const PORT = process.env.PORT || 5000;
 
@@ -11,7 +11,7 @@ const app = express()
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
 
-app.use('/api/goals', require('./routes/apiRoutes'))
+app.use('/api/goals', require('./routes/goalRoutes'))
 // app.use('/api/goals', require('./routes/Like'))
 app.use('/api/users', require('./routes/userRoutes'))
 app.use(errorHandler)
@@ -23,3 +23,5 @@ app.listen(PORT, (err) => {
         console.log(`Server started successfully on http://localhost:${PORT}`)
     }
 })
+
+module.exports = app;
