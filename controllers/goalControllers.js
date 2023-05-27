@@ -18,9 +18,8 @@ const getGoals = asyncHandler(async (req, res) => {
             _id: 1, user: 1, title: 1, text: 1, createdAt: 1, status: 1
         }
     )
-    res.status(200).json({
-        goals
-    })
+    res.status(200).json(
+        goals)
 })
 
 /**
