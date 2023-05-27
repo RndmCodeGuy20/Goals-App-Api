@@ -11,6 +11,12 @@ const app = express()
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
 
+app.get('/', (req, res) => {
+  res.json({
+    info: "goals api"
+  })
+})
+
 app.use('/api/goals', require('./routes/goalRoutes'))
 // app.use('/api/goals', require('./routes/Like'))
 app.use('/api/users', require('./routes/userRoutes'))
